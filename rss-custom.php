@@ -101,7 +101,7 @@ function vrc_post_list( $option = array('url'=>null,'label'=>null) )	{
 
 	if( ! function_exists( 'wp_safe_remote_get' ) ) return;
 
-	$blogRss = ( $option['url'] ) ? $option['url'].'?'.date( 'his' ) : '';
+	$blogRss = ( $option['url'] ) ? $option['url'] : '';
 
 	if ( $blogRss ) {
 		$titlelabel = 'ブログエントリー';
