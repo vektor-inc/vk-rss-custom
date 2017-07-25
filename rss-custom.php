@@ -133,7 +133,7 @@ function vrc_post_list( $option = array('url'=>null,'label'=>null) )	{
 					<span class="infoDate"><?php echo esc_html( $entrydate ); ?></span><span class="infoCate"><?php echo $entry->taxCatList; ?></span>
 					</p>
 					<?php echo $entry->description; ?>
-					<div class="moreLink"><a href="<?php $entry->link; ?>" target="_blank"><?php _e('Read more', 'biz-vektor'); ?></a></div>
+					<div class="moreLink"><a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php _e('Read more', 'biz-vektor'); ?></a></div>
 					</div><!-- [ /.entryTxtBox ] -->
 					
 					<?php if ( $entry->thumbnailUrl ) { ?>
