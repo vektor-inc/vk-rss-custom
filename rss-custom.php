@@ -57,33 +57,30 @@ class vrc_widget_rss extends WP_Widget {
 		$defaults = array(
 			'url'       => 'https://bizvektor.com/feed/?post_type=info',
 			'label'     => 'BizVektorからのお知らせ',
+			'layout'     => 'layout_a',
 		);
 		return wp_parse_args((array)$instance, $defaults);
-	}
-
-	function widget($args, $instance){
-		$instance = $this->standardization( $instance );
-		if( preg_match('/^http.*$/',$instance['url']) || preg_match('/^https.*$/',$instance['url']) ){
-			echo '<div id="rss_widget">';
-			vrc_post_list($instance);
-			echo '</div>';
-		}
 	}
 
 	function form( $instance ){
 		$instance = $this->standardization( $instance );
 
 		?>
-<Label for="<?php echo $this->get_field_id('label'); ?>"><?php _e( 'Heading title', 'biz-vektor' ) ?></label><br/>
+<Label for="<?php echo $this->get_field_id('label'); ?>">■ <?php _e( 'Heading title', 'biz-vektor' ) ?></label><br/>
 <input type="text" id="<?php echo $this->get_field_id('label'); ?>-title" name="<?php echo $this->get_field_name('label'); ?>" value="<?php echo $instance['label']; ?>" />
 <br/>
-<Label for="<?php echo $this->get_field_id('url'); ?>">URL</label><br/>
+<Label for="<?php echo $this->get_field_id('url'); ?>">■ URL</label><br/>
 <input type="text" id="<?php echo $this->get_field_id('url'); ?>" name="<?php echo $this->get_field_name('url'); ?>" value="<?php echo $instance['url']; ?>" />
 <p></p>
 <p>外部ブログなどにRSS機能がある場合、RSSのURLを入力することにより一覧を表示することができます。</p>
 <p>URLの先がRSSでなかったりと正しくない場合は何も表示されません。<br/>
 RSSページの接続が遅い場合はウィジェットの表示速度もそのまま遅くなるのでURLの設定には注意を払う必要があります。</p>
-<p>※ コンテンツエリア（トップページ）への設置推奨</p>
+<Label for="<?php echo $this->get_field_id('layout'); ?>">■ 表示箇所/要素</label><br/>
+<label><input type="radio" name="<?php echo $this->get_field_name('layout'); ?>" value="" <?php echo ($instance['layout'] != 'layout_b')? 'checked' : ''; ?> > コンテンツエリア <br>
+　（画像/タイトル/日付/抜粋/続きを読む）</label><br>
+<label><input type="radio" name="<?php echo $this->get_field_name('layout'); ?>" value="layout_b" <?php echo ($instance['layout'] == 'layout_b')? 'checked' : ''; ?> > サイドバー<br>
+　（画像/タイトル）</label>
+<p>表示件数はRSS配信先のWordPressの「設定 > 表示設定」より設定してください。</p>
 		<?php
 	}
 
@@ -91,64 +88,117 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 		$instance = $old_instance;
 		$instance['url'] = $new_instance['url'];
 		$instance['label'] = $new_instance['label'];
+		$instance['layout'] = $new_instance['layout'];
 		return $instance;
 	}
-}
-/*-------------------------------------------*/
-/*	Home page _ blogList（RSS）
-/*-------------------------------------------*/
-function vrc_post_list( $option = array('url'=>null,'label'=>null) )	{
 
-	if( ! function_exists( 'wp_safe_remote_get' ) ) return;
+	function widget($args, $instance){
+		$instance = $this->standardization( $instance );
+		if( preg_match('/^http.*$/',$instance['url']) || preg_match('/^https.*$/',$instance['url']) ){
 
-	$blogRss = ( $option['url'] ) ? $option['url'] : '';
+			if( ! function_exists( 'wp_safe_remote_get' ) ) return;
 
-	if ( $blogRss ) {
-		$titlelabel = 'ブログエントリー';
-		if ( $option['label'] ){ $titlelabel = $option['label']; }
-		elseif ( $blogRss['rssLabelName'] ){ $titlelabel = $option['rssLabelName']; }
+			$blogRss = ( $instance['url'] ) ? $instance['url'] : '';
 
-		$content = wp_safe_remote_get( $blogRss );
-		if( $content['response']['code'] != 200 ) return;
+			// if ( $blogRss ) {
 
-		$xml = @simplexml_load_string( $content['body'] );
-		if( empty( $xml ) ) return;
-?>
-	<div id="topBlog" class="infoList">
-	<h2><?php echo esc_html( $titlelabel ); ?></h2>
-	<div class="rssBtn"><a href="<?php echo $blogRss ?>" id="blogRss" target="_blank">RSS</a></div>
-		<?php
-		if ($xml->channel->item){
+				$titlelabel = 'ブログエントリー';
+				if ( $instance['label'] ){ 
+					$titlelabel = $instance['label']; 
+				} elseif ( $blogRss['rssLabelName'] ){ 
+					$titlelabel = $instance['rssLabelName']; 
+				}
+
+				$content = wp_safe_remote_get( $blogRss );
+				if( $content['response']['code'] != 200 ) return;
+
+				$xml = @simplexml_load_string( $content['body'] );
+
+				if( empty( $xml ) ) return;
+
+				echo $args['before_widget'];
+				if ( isset( $instance['layout'] ) && $instance['layout'] == 'layout_b'){
+					
+					echo $args['before_title'] . $titlelabel .$args['after_title'];
+					echo '<div class="ttBoxSection">';
+					$this->layout_b( $xml );
+					echo '</div>';
+				} else {
+					echo '<div id="rss_widget">';
+					$this->layout_a( $instance, $titlelabel, $xml );
+					echo '</div>';
+						
+				}
+				echo $args['after_widget'];
+
+			// } // if ( $blogRss ) {
+		}
+	}
+
+	function layout_b($xml){
+		if ( $xml->channel->item ){
 			$date_format = get_option( 'date_format' );
 			foreach( $xml->channel->item as $entry ){
 				$entrydate = date ( $date_format,strtotime ( $entry->pubDate ) );
 				?>
-				<!-- [ .infoListBox ] -->
-				<div class="infoListBox ttBox">
-					<div class="entryTxtBox<?php if ( $entry->thumbnailUrl ) echo ' ttBoxTxt haveThumbnail'; ?>">
-					<h4 class="entryTitle">
-					<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php echo esc_html( $entry->title ); ?></a>
-					</h4>
-					<p class="entryMeta">
-					<span class="infoDate"><?php echo esc_html( $entrydate ); ?></span><span class="infoCate"><?php echo $entry->taxCatList; ?></span>
-					</p>
-					<?php echo $entry->description; ?>
-					<div class="moreLink"><a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php _e('Read more', 'biz-vektor'); ?></a></div>
-					</div><!-- [ /.entryTxtBox ] -->
-					
-					<?php if ( $entry->thumbnailUrl ) { ?>
-						<div class="thumbImage ttBoxThumb">
-						<div class="thumbImageInner">
-						<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><img src="<?php echo $entry->thumbnailUrl; ?>" alt="<?php echo esc_html( $entry->title ); ?>" /></a>
-						</div>
-						</div><!-- [ /.thumbImage ] -->
-					<?php } ?>	
-				</div><!-- [ /.infoListBox ] -->
+				<div class="ttBox">
+				<?php if ( isset( $entry->thumbnailUrl ) && $entry->thumbnailUrl ) : ?>
+					<div class="ttBoxTxt ttBoxRight"><a href="<?php echo esc_url( $entry->link ); ?>"><?php echo strip_tags( $entry->title ); ?></a></div>
+					<div class="ttBoxThumb ttBoxLeft">
+						<a href="<?php echo esc_url( $entry->link ); ?>">
+							<img src="<?php echo $entry->thumbnailUrl; ?>" alt="<?php echo esc_html( $entry->title ); ?>" />
+						</a>
+					</div>
+				<?php else : ?>
+					<div>
+						<a href="<?php echo esc_url( $entry->link ); ?>"><?php echo strip_tags( $entry->title ); ?></a>
+					</div>
+				<?php endif; ?>
+				</div>
+
 			<?php
 			}
+		} // if ( $xml->channel->item ){
+		echo '</div>';
+	}
+
+	function layout_a( $option = array('url'=>null,'label'=>null), $titlelabel = '', $xml = '' )	{
+	?>
+		<div id="topBlog" class="infoList">
+		<h2><?php echo esc_html( $titlelabel ); ?></h2>
+		<div class="rssBtn"><a href="<?php echo esc_url($option['url']) ?>" id="blogRss" target="_blank">RSS</a></div>
+			<?php
+			if ($xml->channel->item){
+				$date_format = get_option( 'date_format' );
+				foreach( $xml->channel->item as $entry ){
+					$entrydate = date ( $date_format,strtotime ( $entry->pubDate ) );
+					?>
+					<!-- [ .infoListBox ] -->
+					<div class="infoListBox ttBox">
+						<div class="entryTxtBox<?php if ( $entry->thumbnailUrl ) echo ' ttBoxTxt haveThumbnail'; ?>">
+						<h4 class="entryTitle">
+						<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php echo esc_html( $entry->title ); ?></a>
+						</h4>
+						<p class="entryMeta">
+						<span class="infoDate"><?php echo esc_html( $entrydate ); ?></span><span class="infoCate"><?php echo $entry->taxCatList; ?></span>
+						</p>
+						<?php echo $entry->description; ?>
+						<div class="moreLink"><a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php _e('Read more', 'biz-vektor'); ?></a></div>
+						</div><!-- [ /.entryTxtBox ] -->
+						
+						<?php if ( $entry->thumbnailUrl ) { ?>
+							<div class="thumbImage ttBoxThumb">
+							<div class="thumbImageInner">
+							<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><img src="<?php echo $entry->thumbnailUrl; ?>" alt="<?php echo esc_html( $entry->title ); ?>" /></a>
+							</div>
+							</div><!-- [ /.thumbImage ] -->
+						<?php } //  if ( $entry->thumbnailUrl ) { ?>	
+					</div><!-- [ /.infoListBox ] -->
+				<?php
+				}
+			?>
+		</div><!-- [ /#topBlog ] -->
+	<?php
 		}
-		?>
-	</div><!-- [ /#topBlog ] -->
-<?php
 	}
 }
