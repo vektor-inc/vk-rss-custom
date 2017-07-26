@@ -162,13 +162,15 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 				?>
 				<div class="ttBox">
 				<?php if ( isset( $entry->thumbnailUrl ) && $entry->thumbnailUrl ) : ?>
-					<div class="ttBoxTxt ttBoxRight"><a href="<?php echo esc_url( $entry->link ); ?>"><?php echo strip_tags( $entry->title ); ?></a></div>
+				<?php // 画像がある時 ?>
+					<div class="ttBoxTxt ttBoxRight"><a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php echo strip_tags( $entry->title ); ?></a></div>
 					<div class="ttBoxThumb ttBoxLeft">
 						<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank">
 							<img src="<?php echo $entry->thumbnailUrl; ?>" alt="<?php echo esc_html( $entry->title ); ?>" />
 						</a>
 					</div>
 				<?php else : ?>
+				<?php // 画像がない時 ?>
 					<div>
 						<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php echo strip_tags( $entry->title ); ?></a>
 					</div>
