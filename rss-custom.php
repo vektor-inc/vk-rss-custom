@@ -57,7 +57,8 @@ class vrc_widget_rss extends WP_Widget {
 		$defaults = array(
 			'url'       => 'https://bizvektor.com/feed/?post_type=info',
 			'label'     => 'BizVektorからのお知らせ',
-			'layout'     => 'layout_a',
+			'layout'    => 'layout_a',
+			'count'     => '',
 		);
 		return wp_parse_args((array)$instance, $defaults);
 	}
@@ -66,21 +67,34 @@ class vrc_widget_rss extends WP_Widget {
 		$instance = $this->standardization( $instance );
 
 		?>
+<br>
 <Label for="<?php echo $this->get_field_id('label'); ?>">■ <?php _e( 'Heading title', 'biz-vektor' ) ?></label><br/>
 <input type="text" id="<?php echo $this->get_field_id('label'); ?>-title" name="<?php echo $this->get_field_name('label'); ?>" value="<?php echo $instance['label']; ?>" />
-<br/>
+<br>
+<br>
 <Label for="<?php echo $this->get_field_id('url'); ?>">■ URL</label><br/>
 <input type="text" id="<?php echo $this->get_field_id('url'); ?>" name="<?php echo $this->get_field_name('url'); ?>" value="<?php echo $instance['url']; ?>" />
 <p></p>
 <p>外部ブログなどにRSS機能がある場合、RSSのURLを入力することにより一覧を表示することができます。</p>
 <p>URLの先がRSSでなかったりと正しくない場合は何も表示されません。<br/>
 RSSページの接続が遅い場合はウィジェットの表示速度もそのまま遅くなるのでURLの設定には注意を払う必要があります。</p>
+
+
+
 <Label for="<?php echo $this->get_field_id('layout'); ?>">■ 表示箇所/要素</label><br/>
 <label><input type="radio" name="<?php echo $this->get_field_name('layout'); ?>" value="" <?php echo ($instance['layout'] != 'layout_b')? 'checked' : ''; ?> > コンテンツエリア <br>
 　（画像/タイトル/日付/抜粋/続きを読む）</label><br>
 <label><input type="radio" name="<?php echo $this->get_field_name('layout'); ?>" value="layout_b" <?php echo ($instance['layout'] == 'layout_b')? 'checked' : ''; ?> > サイドバー<br>
 　（画像/タイトル）</label>
-<p>表示件数はRSS配信先のWordPressの「設定 > 表示設定」より設定してください。</p>
+<br/>
+<br>
+<Label for="<?php echo $this->get_field_id('count'); ?>">■ 表示件数</label><br/>
+<input type="text" id="<?php echo $this->get_field_id('count'); ?>-title" name="<?php echo $this->get_field_name('count'); ?>" value="<?php echo $instance['count']; ?>" />
+<br/>
+
+
+<p>表示件数が未入力の場合はRSS配信先のWordPressの「設定 > 表示設定」で指定した数が表示されます。<br>
+「設定 > 表示設定」で指定した数よりも多い数を入力しても表示されません。</p>
 		<?php
 	}
 
@@ -89,6 +103,7 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 		$instance['url'] = $new_instance['url'];
 		$instance['label'] = $new_instance['label'];
 		$instance['layout'] = $new_instance['layout'];
+		$instance['count'] = $new_instance['count'];
 		return $instance;
 	}
 
@@ -116,16 +131,19 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 
 				if( empty( $xml ) ) return;
 
+				// 全角数字を半角に変換 + 文字列から数値に変換
+				$max_count = intval( mb_convert_kana( $instance['count'], 'a' ) );
+
 				echo $args['before_widget'];
 				if ( isset( $instance['layout'] ) && $instance['layout'] == 'layout_b'){
 					
 					echo $args['before_title'] . $titlelabel .$args['after_title'];
 					echo '<div class="ttBoxSection">';
-					$this->layout_b( $xml );
+					$this->layout_b( $instance, $xml, $max_count);
 					echo '</div>';
 				} else {
 					echo '<div id="rss_widget">';
-					$this->layout_a( $instance, $titlelabel, $xml );
+					$this->layout_a( $instance, $titlelabel, $xml, $max_count );
 					echo '</div>';
 						
 				}
@@ -135,9 +153,10 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 		}
 	}
 
-	function layout_b($xml){
+	function layout_b( $instance, $xml, $max_count){
 		if ( $xml->channel->item ){
 			$date_format = get_option( 'date_format' );
+			$count = 0;
 			foreach( $xml->channel->item as $entry ){
 				$entrydate = date ( $date_format,strtotime ( $entry->pubDate ) );
 				?>
@@ -157,19 +176,23 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 				</div>
 
 			<?php
+			$count++;
+			// 数字が入っていてカウントと現在の表示件数と同じになったらループ処理を中断する
+			if ( $max_count && $max_count <= $count ) break;
 			}
 		} // if ( $xml->channel->item ){
 		echo '</div>';
 	}
 
-	function layout_a( $option = array('url'=>null,'label'=>null), $titlelabel = '', $xml = '' )	{
+	function layout_a( $instance = array('url'=>null,'label'=>null), $titlelabel = '', $xml = '', $max_count )	{
 	?>
 		<div id="topBlog" class="infoList">
 		<h2><?php echo esc_html( $titlelabel ); ?></h2>
-		<div class="rssBtn"><a href="<?php echo esc_url($option['url']) ?>" id="blogRss" target="_blank">RSS</a></div>
+		<div class="rssBtn"><a href="<?php echo esc_url($instance['url']) ?>" id="blogRss" target="_blank">RSS</a></div>
 			<?php
 			if ($xml->channel->item){
 				$date_format = get_option( 'date_format' );
+				$count = 0;
 				foreach( $xml->channel->item as $entry ){
 					$entrydate = date ( $date_format,strtotime ( $entry->pubDate ) );
 					?>
@@ -194,8 +217,11 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 							</div><!-- [ /.thumbImage ] -->
 						<?php } //  if ( $entry->thumbnailUrl ) { ?>	
 					</div><!-- [ /.infoListBox ] -->
-				<?php
-				}
+					<?php
+					$count++;
+					// 数字が入っていてカウントと現在の表示件数と同じになったらループ処理を中断する
+					if ( $max_count && $max_count <= $count ) break;
+				} // foreach( $xml->channel->item as $entry ){
 			?>
 		</div><!-- [ /#topBlog ] -->
 	<?php
