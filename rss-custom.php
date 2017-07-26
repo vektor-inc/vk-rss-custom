@@ -181,7 +181,6 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 			if ( $max_count && $max_count <= $count ) break;
 			}
 		} // if ( $xml->channel->item ){
-		echo '</div>';
 	}
 
 	function layout_a( $instance = array('url'=>null,'label'=>null), $titlelabel = '', $xml = '', $max_count )	{
