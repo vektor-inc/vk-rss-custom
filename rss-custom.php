@@ -2,7 +2,7 @@
 /**
  * Plugin Name: VK RSS Custom
  * Plugin URI:
- * Version: 0.0.1
+ * Version: 0.0.2
  * Author: Vektor,Inc.
  * Author URI: http://www.vektor-inc.co.jp
  * Description:
