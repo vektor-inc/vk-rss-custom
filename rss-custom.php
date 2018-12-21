@@ -171,14 +171,20 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 			$count       = 0;
 			foreach ( $xml->channel->item as $entry ) {
 				$entrydate = date( $date_format, strtotime( $entry->pubDate ) );
+				/* 画像URLがオブジェクトで返ってくるためfilter_varでチェックし、空の場合は値が '' になるようにする */
+				if ( filter_var( $entry->thumbnailUrl ) ) {
+					$thumbnailUrl = esc_url( $entry->thumbnailUrl );
+				} else {
+					$thumbnailUrl = '';
+				}
 				?>
 				<div class="ttBox">
-				<?php if ( isset( $entry->thumbnailUrl ) && $entry->thumbnailUrl ) : ?>
+				<?php if ( isset( $thumbnailUrl ) && $thumbnailUrl ) : ?>
 				<?php // 画像がある時 ?>
 					<div class="ttBoxTxt ttBoxRight"><a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php echo strip_tags( $entry->title ); ?></a></div>
 					<div class="ttBoxThumb ttBoxLeft">
 						<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank">
-							<img src="<?php echo $entry->thumbnailUrl; ?>" alt="<?php echo esc_html( $entry->title ); ?>" />
+							<img src="<?php echo $thumbnailUrl; ?>" alt="<?php echo esc_html( $entry->title ); ?>" />
 						</a>
 					</div>
 				<?php else : ?>
@@ -213,13 +219,20 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 				$count       = 0;
 				foreach ( $xml->channel->item as $entry ) {
 					$entrydate = date( $date_format, strtotime( $entry->pubDate ) );
+					/* 画像URLがオブジェクトで返ってくるためfilter_varでチェックし、空の場合は値が '' になるようにする */
+					if ( filter_var( $entry->thumbnailUrl ) ) {
+						$thumbnailUrl = esc_url( $entry->thumbnailUrl );
+					} else {
+						$thumbnailUrl = '';
+					}
 					?>
 					<!-- [ .infoListBox ] -->
 					<div class="infoListBox ttBox">
 						<div class="entryTxtBox
 						<?php
-						if ( $entry->thumbnailUrl ) {
-							echo ' ttBoxTxt haveThumbnail';}
+						if ( $thumbnailUrl ) {
+							echo ' ttBoxTxt haveThumbnail';
+						}
 ?>
 ">
 						<h4 class="entryTitle">
@@ -232,13 +245,13 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 						<div class="moreLink"><a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php _e( 'Read more', 'biz-vektor' ); ?></a></div>
 						</div><!-- [ /.entryTxtBox ] -->
 
-						<?php if ( $entry->thumbnailUrl ) { ?>
+						<?php if ( $thumbnailUrl ) { ?>
 							<div class="thumbImage ttBoxThumb">
 							<div class="thumbImageInner">
-							<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><img src="<?php echo $entry->thumbnailUrl; ?>" alt="<?php echo esc_html( $entry->title ); ?>" /></a>
+							<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><img src="<?php echo $thumbnailUrl; ?>" alt="<?php echo esc_html( $entry->title ); ?>" /></a>
 							</div>
 							</div><!-- [ /.thumbImage ] -->
-						<?php } //  if ( $entry->thumbnailUrl ) { ?>
+						<?php } //  if ( $thumbnailUrl ) { ?>
 					</div><!-- [ /.infoListBox ] -->
 					<?php
 					$count++;
