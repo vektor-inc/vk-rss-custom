@@ -13,7 +13,8 @@
  */
 
 $data = get_file_data(
-	__FILE__, array(
+	__FILE__,
+	array(
 		'version'    => 'Version',
 		'textdomain' => 'Text Domain',
 	)
@@ -24,8 +25,10 @@ define( 'VK_RSS_CUSTOM_URL', plugin_dir_url( __FILE__ ) );
 define( 'VK_RSS_CUSTOM_DIR', plugin_dir_path( __FILE__ ) );
 
 // require_once( VK_RSS_CUSTOM_DIR . 'class.pluginname-common.php' );
-/*-------------------------------------------*/
-/*  Load plugin_name css
+/*
+-------------------------------------------*/
+/*
+  Load plugin_name css
 /*-------------------------------------------*/
 
 remove_filter( 'do_feed_rss2', 'do_feed_rss2', 10 );
@@ -43,8 +46,10 @@ function vrc_register_widgets() {
 	}
 }
 
-/*-------------------------------------------*/
-/*	RSS widget
+/*
+-------------------------------------------*/
+/*
+  RSS widget
 /*-------------------------------------------*/
 class vrc_widget_rss extends WP_Widget {
 
@@ -180,7 +185,7 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 				?>
 				<div class="ttBox">
 				<?php if ( isset( $thumbnailUrl ) && $thumbnailUrl ) : ?>
-				<?php // 画像がある時 ?>
+					<?php // 画像がある時 ?>
 					<div class="ttBoxTxt ttBoxRight"><a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php echo strip_tags( $entry->title ); ?></a></div>
 					<div class="ttBoxThumb ttBoxLeft">
 						<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank">
@@ -188,19 +193,19 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 						</a>
 					</div>
 				<?php else : ?>
-				<?php // 画像がない時 ?>
+					<?php // 画像がない時 ?>
 					<div>
 						<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php echo strip_tags( $entry->title ); ?></a>
 					</div>
 				<?php endif; ?>
 				</div>
 
-			<?php
-			$count++;
-			// 数字が入っていてカウントと現在の表示件数と同じになったらループ処理を中断する
-			if ( $max_count && $max_count <= $count ) {
-				break;
-			}
+				<?php
+				$count++;
+				// 数字が入っていてカウントと現在の表示件数と同じになったらループ処理を中断する
+				if ( $max_count && $max_count <= $count ) {
+					break;
+				}
 			}
 		} // if ( $xml->channel->item ){
 	}
@@ -209,7 +214,7 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 		'url'   => null,
 		'label' => null,
 	), $titlelabel = '', $xml = '', $max_count ) {
-	?>
+		?>
 		<div id="topBlog" class="infoList">
 		<h2><?php echo esc_html( $titlelabel ); ?></h2>
 		<div class="rssBtn"><a href="<?php echo esc_url( $instance['url'] ); ?>" id="blogRss" target="_blank">RSS</a></div>
@@ -233,7 +238,7 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 						if ( $thumbnailUrl ) {
 							echo ' ttBoxTxt haveThumbnail';
 						}
-?>
+						?>
 ">
 						<h4 class="entryTitle">
 						<a href="<?php echo esc_url( $entry->link ); ?>" target="_blank"><?php echo esc_html( $entry->title ); ?></a>
@@ -260,9 +265,9 @@ RSSページの接続が遅い場合はウィジェットの表示速度もそ�
 						break;
 					}
 				} // foreach( $xml->channel->item as $entry ){
-			?>
+				?>
 		</div><!-- [ /#topBlog ] -->
-	<?php
+				<?php
 			}
 	}
 }
