@@ -90,12 +90,10 @@ class vrc_widget_rss extends WP_Widget {
 <p>URLの先がRSSでなかったりと正しくない場合は何も表示されません。<br/>
 RSSページの接続が遅い場合はウィジェットの表示速度もそのまま遅くなるのでURLの設定には注意を払う必要があります。</p>
 
-
-
 <Label for="<?php echo $this->get_field_id( 'layout' ); ?>">■ 表示箇所/要素</label><br/>
-<label><input type="radio" name="<?php echo $this->get_field_name( 'layout' ); ?>" value="" <?php echo ( $instance['layout'] != 'layout_b' ) ? 'checked' : ''; ?> > コンテンツエリア <br>
+<label><input type="radio" name="<?php echo $this->get_field_name( 'layout' ); ?>" value="" <?php echo ( empty( $instance['layout'] ) ) ? 'checked' : ''; ?> > BixVektor コンテンツエリア用 <br>
 　（画像/タイトル/日付/抜粋/続きを読む）</label><br>
-<label><input type="radio" name="<?php echo $this->get_field_name( 'layout' ); ?>" value="layout_b" <?php echo ( $instance['layout'] == 'layout_b' ) ? 'checked' : ''; ?> > サイドバー<br>
+<label><input type="radio" name="<?php echo $this->get_field_name( 'layout' ); ?>" value="layout_b" <?php echo ( 'layout_b' === $instance['layout'] ) ? 'checked' : ''; ?> > BizVektor サイドバー用<br>
 　（画像/タイトル）</label>
 <br/>
 <br>
